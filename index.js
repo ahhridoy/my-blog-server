@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 9000;
 
 const cors = require("cors");
 
@@ -21,58 +21,52 @@ const run = async () => {
   try {
     await client.connect();
     console.log("database connected");
-    const db = client.db("myBlog");
-    const blogsCollection = db.collection("blogs");
+    const db = client.db("ExpenseTracker");
+    const transactionsCollection = db.collection("transactions");
 
-    // get all blogs
-    app.get("/blogs", async (req, res) => {
-      const cursor = blogsCollection.find({});
-      const blogs = await cursor.toArray();
-      res.send({ status: true, data: blogs });
+    // get all transactions
+    app.get("/transactions", async (req, res) => {
+      const cursor = transactionsCollection.find({});
+      const transactions = await cursor.toArray();
+      res.send(transactions);
     });
 
-    // get one blog
-    app.get("/blog/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const blog = await blogsCollection.findOne(query);
-      res.send(blog);
-    });
+    // get one transactions
+    // app.get("/transaction/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: ObjectId(id) };
+    //   const transaction = await transactionsCollection.findOne(query);
+    //   res.send(transaction);
+    // });
 
-    // post blog
-    app.post("/blog", async (req, res) => {
-      const blog = req.body;
-      const result = await blogsCollection.insertOne(blog);
+    // post transaction
+    app.post("/transactions", async (req, res) => {
+      const transactions = req.body;
+      const result = await transactionsCollection.insertOne(transactions);
       res.send(result);
     });
 
-    // delete blog
-    app.delete("/blog/:id", async (req, res) => {
+    // delete transaction
+    app.delete("/transactions/:id", async (req, res) => {
       const id = req.params.id;
-      const result = await blogsCollection.deleteOne({ _id: ObjectId(id) });
+      const result = await transactionsCollection.deleteOne({
+        _id: ObjectId(id),
+      });
       res.send(result);
     });
 
-    // update blog
-    app.put("/blog/:id", async (req, res) => {
+    // update transactions
+    app.put("/transactions/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: ObjectId(id) };
       const updateDoc = {
         $set: {
-          model: req.body.model,
-          brand: req.body.brand,
-          status: req.body.status,
-          price: req.body.price,
-          keyFeature: [
-            req.body.keyFeature1,
-            req.body.keyFeature2,
-            req.body.keyFeature3,
-            req.body.keyFeature4,
-          ],
-          spec: [],
+          name: req.body.name,
+          type: req.body.type,
+          amount: req.body.amount,
         },
       };
-      const result = await blogsCollection.updateOne(filter, updateDoc);
+      const result = await transactionsCollection.updateOne(filter, updateDoc);
       res.json(result);
     });
   } finally {
